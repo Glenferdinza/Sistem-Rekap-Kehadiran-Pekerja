@@ -75,28 +75,6 @@ int main() {
     std::vector<Pekerja> daftarPekerja;
     Waktu jamStandarMasuk = {8, 0}; // Standard entry time 08:00
 
-    // Pre-populate with data from "Contoh Data" for demonstration
-    daftarPekerja.push_back({"ID-001", "Budi", {}, 0});
-    daftarPekerja.push_back({"ID-002", "Sinta", {}, 0});
-    daftarPekerja.push_back({"ID-003", "Doni", {}, 0});
-    
-    // Simulate initial attendance records from PDF
-    Kehadiran budi_k = {"22-08-2025", parseTime("08:05"), parseTime("17:00"), 0};
-    budi_k.menitKeterlambatan = std::max(0, budi_k.jamMasuk.toMinutes() - jamStandarMasuk.toMinutes());
-    daftarPekerja[0].rekamKehadiran.push_back(budi_k);
-    daftarPekerja[0].totalMenitKeterlambatan += budi_k.menitKeterlambatan;
-
-    Kehadiran sinta_k = {"22-08-2025", parseTime("07:58"), parseTime("17:02"), 0};
-    sinta_k.menitKeterlambatan = std::max(0, sinta_k.jamMasuk.toMinutes() - jamStandarMasuk.toMinutes());
-    daftarPekerja[1].rekamKehadiran.push_back(sinta_k);
-    daftarPekerja[1].totalMenitKeterlambatan += sinta_k.menitKeterlambatan;
-
-    Kehadiran doni_k = {"22-08-2025", parseTime("08:15"), parseTime("16:30"), 0};
-    doni_k.menitKeterlambatan = std::max(0, doni_k.jamMasuk.toMinutes() - jamStandarMasuk.toMinutes());
-    daftarPekerja[2].rekamKehadiran.push_back(doni_k);
-    daftarPekerja[2].totalMenitKeterlambatan += doni_k.menitKeterlambatan;
-
-
     int pilihan = 0;
     while (pilihan != 6) {
         std::cout << "\n===== Sistem Rekap Kehadiran Pekerja =====\n";
