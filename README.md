@@ -11,6 +11,7 @@ Sistem Rekap Kehadiran Pekerja adalah program berbasis C++ yang dirancang untuk 
 - **Laporan Rekapitulasi**: Menampilkan total kehadiran dan total keterlambatan per pekerja
 - **Pencarian Data**: Mencari pekerja berdasarkan nama dengan detail kehadiran lengkap
 - **Pengurutan Data**: Mengurutkan pekerja berdasarkan total keterlambatan menggunakan algoritma Selection Sort
+- **Export ke CSV**: Mengekspor laporan kehadiran ke file CSV untuk analisis lebih lanjut
 
 ### Algoritma yang Digunakan:
 - **Selection Sort**: Untuk mengurutkan pekerja berdasarkan total keterlambatan (descending)
@@ -36,6 +37,16 @@ g++ main.cpp -o attendance
 ./attendance
 ```
 
+### Menu Program
+Setelah program dijalankan, Anda akan melihat menu dengan 7 pilihan:
+1. **Tambah Pekerja** - Menambahkan data pekerja baru ke sistem
+2. **Input Kehadiran Harian** - Mencatat kehadiran untuk semua pekerja pada tanggal tertentu
+3. **Tampilkan Laporan Rekapitulasi** - Menampilkan ringkasan kehadiran semua pekerja
+4. **Tampilkan Urutan Pekerja Terlambat** - Menampilkan pekerja yang diurutkan berdasarkan keterlambatan
+5. **Cari Pekerja** - Mencari data pekerja berdasarkan nama
+6. **Export Laporan ke CSV** - Menyimpan laporan ke file CSV
+7. **Keluar** - Keluar dari program
+
 ## Penjelasan Fungsi
 
 ### 1. `inputDataPekerja(std::vector<Pekerja>& daftarPekerja)`
@@ -52,6 +63,9 @@ Mencari pekerja berdasarkan nama menggunakan algoritma Linear Search. Fungsi ini
 
 ### 5. `tampilkanUrutanTerlambat(std::vector<Pekerja> daftarPekerja)`
 Menampilkan urutan pekerja berdasarkan total keterlambatan dari tertinggi ke terendah. Fungsi ini mengimplementasikan algoritma Selection Sort dengan nested loop. Loop luar mengiterasi dari indeks 0 hingga n-1, mencari elemen dengan keterlambatan maksimum dari sisa elemen yang belum terurut, kemudian melakukan swap. Fungsi menerima copy dari vector (bukan reference) agar tidak mengubah urutan data asli. Hanya menampilkan pekerja dengan keterlambatan > 0 menit. Kompleksitas waktu: O(n²).
+
+### 6. `exportLaporanCSV(const std::vector<Pekerja>& daftarPekerja)`
+Mengekspor laporan rekapitulasi kehadiran ke file CSV (Comma-Separated Values). Fungsi ini menerima const reference vector pekerja, meminta input nama file dari user, kemudian menggunakan `ofstream` untuk membuat dan menulis data ke file. File CSV berisi header (ID, Nama, Total Hadir, Total Keterlambatan) dan data setiap pekerja dalam format yang dapat dibuka dengan Excel atau aplikasi spreadsheet lainnya. File disimpan di direktori yang sama dengan program executable.
 
 ### Fungsi Helper:
 - **`parseTime(const std::string& timeStr)`**: Mengkonversi string format HH:MM menjadi struct Waktu
