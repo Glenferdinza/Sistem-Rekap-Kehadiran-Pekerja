@@ -6,6 +6,7 @@
 #include <numeric>
 #include <limits>
 #include <sstream>
+#include <fstream>
 
 // Struct to represent time
 struct Waktu {
@@ -51,6 +52,9 @@ void cariDataPekerja(const std::vector<Pekerja>& daftarPekerja);
 // 5. urutkanKeterlambatan
 void tampilkanUrutanTerlambat(std::vector<Pekerja> daftarPekerja);
 
+// 6. exportLaporanCSV
+void exportLaporanCSV(const std::vector<Pekerja>& daftarPekerja);
+
 // Helper function to parse time from HH:MM string
 Waktu parseTime(const std::string& timeStr) {
     Waktu t = {0, 0};
@@ -76,7 +80,7 @@ int main() {
     Waktu jamStandarMasuk = {8, 0}; // Standard entry time 08:00
 
     int pilihan = 0;
-    while (pilihan != 6) {
+    while (pilihan != 7) {
         std::cout << "\n===== Sistem Rekap Kehadiran Pekerja =====\n";
         std::cout << "Jam Standar Masuk: " << formatWaktu(jamStandarMasuk) << "\n";
         std::cout << "==========================================\n";
@@ -85,7 +89,8 @@ int main() {
         std::cout << "3. Tampilkan Laporan Rekapitulasi\n";
         std::cout << "4. Tampilkan Urutan Pekerja Terlambat\n";
         std::cout << "5. Cari Pekerja\n";
-        std::cout << "6. Keluar\n";
+        std::cout << "6. Export Laporan ke CSV\n";
+        std::cout << "7. Keluar\n";
         std::cout << "==========================================\n";
         std::cout << "Masukkan pilihan Anda: ";
         std::cin >> pilihan;
@@ -116,6 +121,9 @@ int main() {
                 cariDataPekerja(daftarPekerja);
                 break;
             case 6:
+                exportLaporanCSV(daftarPekerja);
+                break;
+            case 7:
                 std::cout << "Terima kasih telah menggunakan sistem.\n";
                 break;
             default:
@@ -253,4 +261,40 @@ void tampilkanUrutanTerlambat(std::vector<Pekerja> daftarPekerja) {
              std::cout << std::left << std::setw(15) << pekerja.nama << pekerja.totalMenitKeterlambatan << "\n";
         }
     }
+}
+
+void exportLaporanCSV(const std::vector<Pekerja>& daftarPekerja) {
+    std::cout << "\n--- Export Laporan ke CSV ---\n";
+    
+    if (daftarPekerja.empty()) {
+        std::cout << "Tidak ada data pekerja untuk di-export.\n";
+        return;
+    }
+    
+    std::string namaFile;
+    std::cout << "Masukkan nama file (tanpa ekstensi .csv): ";
+    std::getline(std::cin, namaFile);
+    namaFile += ".csv";
+    
+    std::ofstream file(namaFile);
+    if (!file.is_open()) {
+        std::cout << "Gagal membuat file " << namaFile << "\n";
+        return;
+    }
+    
+    // Write header
+    file << "ID,Nama,Total Hadir,Total Keterlambatan (menit)\n";
+    
+    // Write data
+    for (const auto& pekerja : daftarPekerja) {
+        int totalHadir = pekerja.rekamKehadiran.size();
+        file << pekerja.id << ","
+             << pekerja.nama << ","
+             << totalHadir << ","
+             << pekerja.totalMenitKeterlambatan << "\n";
+    }
+    
+    file.close();
+    std::cout << "Laporan berhasil di-export ke file '" << namaFile << "'\n";
+    std::cout << "File tersimpan di direktori yang sama dengan program.\n";
 }
