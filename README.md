@@ -12,6 +12,7 @@ Sistem Rekap Kehadiran Pekerja adalah program berbasis C++ yang dirancang untuk 
 - **Pencarian Data**: Mencari pekerja berdasarkan nama dengan detail kehadiran lengkap
 - **Pengurutan Data**: Mengurutkan pekerja berdasarkan total keterlambatan menggunakan algoritma Selection Sort
 - **Export ke CSV**: Mengekspor laporan kehadiran ke file CSV untuk analisis lebih lanjut
+- **Validasi Input Komprehensif**: Validasi format ID, tanggal, waktu, dan logika bisnis
 
 ### Algoritma yang Digunakan:
 - **Selection Sort**: Untuk mengurutkan pekerja berdasarkan total keterlambatan (descending)
@@ -27,14 +28,14 @@ Sistem Rekap Kehadiran Pekerja adalah program berbasis C++ yang dirancang untuk 
 
 **Windows (PowerShell/CMD):**
 ```bash
-g++ main.cpp -o attendance
-.\attendance.exe
+g++ main.cpp -o main
+.\main.exe
 ```
 
 **Linux/Mac:**
 ```bash
-g++ main.cpp -o attendance
-./attendance
+g++ main.cpp -o main
+./main
 ```
 
 ### Menu Program
@@ -47,13 +48,38 @@ Setelah program dijalankan, Anda akan melihat menu dengan 7 pilihan:
 6. **Export Laporan ke CSV** - Menyimpan laporan ke file CSV
 7. **Keluar** - Keluar dari program
 
+### Validasi Input
+Program dilengkapi dengan validasi input yang ketat untuk memastikan data yang valid:
+
+#### Validasi ID Pekerja
+- Format wajib: `IDXXXX` (contoh: ID0001, ID0002, ID0123)
+- Harus dimulai dengan "ID" diikuti 4 digit angka
+- Tidak boleh ada duplikasi ID
+- Contoh valid: `ID0001`, `ID0010`, `ID9999`
+- Contoh invalid: `id0001`, `ID01`, `ID12345`, `0001`
+
+#### Validasi Tanggal
+- Format wajib: `DD-MM-YYYY` (contoh: 25-11-2025)
+- Validasi jumlah hari per bulan (tidak bisa input tanggal 32, 33, dll)
+- Mendukung perhitungan tahun kabisat untuk Februari
+- Range tahun: 1900-2100
+- Contoh valid: `25-11-2025`, `29-02-2024` (tahun kabisat)
+- Contoh invalid: `32-01-2025`, `29-02-2025` (bukan tahun kabisat), `31-04-2025`
+
+#### Validasi Waktu
+- Format wajib: `HH:MM` (contoh: 08:30, 17:45)
+- Jam: 00-23, Menit: 00-59
+- Jam pulang harus lebih besar dari jam masuk
+- Contoh valid: Masuk `08:30`, Pulang `17:00`
+- Contoh invalid: Masuk `25:00`, Pulang `08:70`, atau Pulang lebih awal dari masuk
+
 ## Penjelasan Fungsi
 
 ### 1. `inputDataPekerja(std::vector<Pekerja>& daftarPekerja)`
-Menambahkan data pekerja baru ke dalam sistem. Fungsi ini menerima parameter referensi ke vector pekerja, meminta input ID dan nama pekerja menggunakan `getline`, menginisialisasi total keterlambatan dengan nilai 0, kemudian menambahkan pekerja baru ke dalam vector menggunakan `push_back`.
+Menambahkan data pekerja baru ke dalam sistem. Fungsi ini menerima parameter referensi ke vector pekerja, meminta input ID dan nama pekerja menggunakan `getline`, menginisialisasi total keterlambatan dengan nilai 0, kemudian menambahkan pekerja baru ke dalam vector menggunakan `push_back`. Fungsi dilengkapi dengan validasi format ID (IDXXXX) menggunakan helper function `isValidIDFormat()` dan pengecekan duplikasi ID menggunakan `isIDDuplicate()`. Loop validasi akan terus meminta input ulang hingga format ID benar dan tidak duplikat.
 
 ### 2. `inputKehadiranHarian(std::vector<Pekerja>& daftarPekerja, const Waktu& jamStandarMasuk)`
-Mencatat kehadiran harian untuk semua pekerja pada tanggal tertentu. Fungsi ini meminta input tanggal sekali, kemudian melakukan iterasi untuk setiap pekerja dan meminta input jam masuk dan jam pulang. Fungsi helper `parseTime` digunakan untuk mengkonversi string format HH:MM menjadi struct Waktu. Keterlambatan dihitung dengan rumus `max(0, jamMasuk - jamStandar)` menggunakan method `toMinutes()` untuk konversi ke total menit sejak tengah malam.
+Mencatat kehadiran harian untuk semua pekerja pada tanggal tertentu. Fungsi ini meminta input tanggal sekali dengan validasi menggunakan `isValidDate()` yang memeriksa format DD-MM-YYYY, jumlah hari per bulan, dan tahun kabisat. Kemudian melakukan iterasi untuk setiap pekerja dan meminta input jam masuk dan jam pulang dengan validasi menggunakan `isValidTime()` yang memeriksa format HH:MM dan range jam (0-23) serta menit (0-59). Fungsi juga memvalidasi bahwa jam pulang harus lebih besar dari jam masuk. Keterlambatan dihitung dengan rumus `max(0, jamMasuk - jamStandar)` menggunakan method `toMinutes()` untuk konversi ke total menit sejak tengah malam. Semua variabel diinisialisasi di luar loop untuk performa optimal.
 
 ### 3. `tampilkanLaporan(const std::vector<Pekerja>& daftarPekerja)`
 Menampilkan laporan rekapitulasi kehadiran dalam bentuk tabel. Fungsi ini menerima parameter const reference untuk mencegah modifikasi data. Menggunakan manipulator `iomanip` seperti `setw` dan `left` untuk formatting tabel dengan kolom ID, Nama, Total Hadir, dan Total Keterlambatan. Total hari hadir dihitung dari ukuran vector `rekamKehadiran`.
@@ -68,7 +94,12 @@ Menampilkan urutan pekerja berdasarkan total keterlambatan dari tertinggi ke ter
 Mengekspor laporan rekapitulasi kehadiran ke file CSV (Comma-Separated Values). Fungsi ini menerima const reference vector pekerja, meminta input nama file dari user, kemudian menggunakan `ofstream` untuk membuat dan menulis data ke file. File CSV berisi header (ID, Nama, Total Hadir, Total Keterlambatan) dan data setiap pekerja dalam format yang dapat dibuka dengan Excel atau aplikasi spreadsheet lainnya. File disimpan di direktori yang sama dengan program executable.
 
 ### Fungsi Helper:
-- **`parseTime(const std::string& timeStr)`**: Mengkonversi string format HH:MM menjadi struct Waktu
+- **`isValidIDFormat(const std::string& id)`**: Validasi format ID harus IDXXXX dengan 2 huruf "ID" dan 4 digit angka
+- **`isIDDuplicate(const std::vector<Pekerja>& daftarPekerja, const std::string& id)`**: Cek apakah ID sudah terdaftar
+- **`isLeapYear(int year)`**: Menentukan apakah tahun adalah tahun kabisat
+- **`getDaysInMonth(int month, int year)`**: Mendapatkan jumlah hari dalam bulan tertentu dengan mempertimbangkan tahun kabisat
+- **`isValidDate(const std::string& dateStr)`**: Validasi format tanggal DD-MM-YYYY dan memastikan tanggal valid
+- **`isValidTime(const std::string& timeStr, Waktu& outTime)`**: Validasi format waktu HH:MM dan range nilai yang valid
 - **`formatWaktu(const Waktu& t)`**: Mengkonversi struct Waktu menjadi string format HH:MM dengan padding zero
 - **`toMinutes()`**: Method dalam struct Waktu yang mengkonversi jam dan menit menjadi total menit sejak tengah malam
 
